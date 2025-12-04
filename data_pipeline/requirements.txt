@@ -1,0 +1,5 @@
+# Data pipeline dependencies
+datasets>=2.14.0
+pandas>=1.5.0
+pyarrow>=12.0.0
+
