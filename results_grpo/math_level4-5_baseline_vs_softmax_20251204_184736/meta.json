@@ -1,0 +1,10 @@
+{
+  "dataset": "math_level4-5",
+  "ablations": [
+    "baseline",
+    "softmax"
+  ],
+  "data_path": "../data/math_level4-5",
+  "started": "20251204_184736",
+  "results_dir": "../results_grpo/math_level4-5_baseline_vs_softmax_20251204_184736"
+}

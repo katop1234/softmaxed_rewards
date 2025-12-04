@@ -1,0 +1,18 @@
+{
+  "total_problems": 2721,
+  "sources": [
+    "lighteval/MATH"
+  ],
+  "difficulties": {
+    "3": 2721
+  },
+  "subjects": {
+    "Counting & Probability": 260,
+    "Precalculus": 295,
+    "Algebra": 651,
+    "Number Theory": 313,
+    "Intermediate Algebra": 496,
+    "Prealgebra": 475,
+    "Geometry": 231
+  }
+}

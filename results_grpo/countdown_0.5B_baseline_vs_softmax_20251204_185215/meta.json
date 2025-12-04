@@ -1,0 +1,10 @@
+{
+  "dataset": "countdown",
+  "ablations": [
+    "baseline",
+    "softmax"
+  ],
+  "data_path": "Countdown-Tasks-3to4",
+  "started": "20251204_185215",
+  "results_dir": "../results_grpo/countdown_0.5B_baseline_vs_softmax_20251204_185215"
+}

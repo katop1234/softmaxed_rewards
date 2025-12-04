@@ -1,0 +1,12 @@
+{
+  "total_problems": 8787,
+  "sources": [
+    "gsm8k"
+  ],
+  "difficulties": {
+    "2": 8787
+  },
+  "subjects": {
+    "arithmetic": 8787
+  }
+}

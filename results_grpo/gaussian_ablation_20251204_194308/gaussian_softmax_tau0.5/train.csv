@@ -1,0 +1,2 @@
+exp,step,success_rate,mean_reward,entropy,loss,grad_norm,response_len
+gaussian_softmax_tau0.5,1,0.05859375,0.13355468750000002,1.1181128025054932,0.00291237304918468,1.3125,432.3515625
