@@ -295,3 +295,135 @@ This gives ~7:1 weight ratio between best and worst samples.
 4. [ ] Run softmax (τ=0.5) 
 5. [ ] Compare success rate curves
 
+
+---
+
+### Future Experiment: Qwen 0.5B
+
+**Hypothesis**: Softmax reward weighting might help smaller models learn reasoning.
+
+**Context**: GRPO-Zero authors say:
+> "Works for model <= 1.5B. For Qwen2.5-0.5B base, we know it fails to learn reasoning."
+
+**Why softmax might help**:
+- Smaller models have less capacity → need stronger signal on correct samples
+- Softmax concentrates learning on rare correct examples
+- Could be the difference between learning and not learning
+
+**To test**:
+```bash
+python run_experiment.py --dataset countdown --ablations baseline,softmax --model Qwen2.5-0.5B
+```
+
+If this works, it would be a strong validation of the softmax hypothesis!
+
+---
+
+### Future: Teacher Forcing + RL (Cold Start Solution)
+
+**Problem**: Pure RL gradient ∝ π(y*|x) → tiny when model is bad (can't learn from 0%)
+
+**Solution**: Combined objective
+```
+L = E_π[R(y)] - β * KL(π_θ || p*)
+```
+
+Where p* is the ground truth distribution.
+
+**Implementation**:
+1. Supervise on y* (ground truth) → gives strong gradient
+2. RL on self-play rollouts → explores beyond supervised data
+3. Optional: explicit KL term to stay close to p*
+
+**Why this works**:
+- SL provides the "base" capability
+- RL provides the "correction" using verifier
+- Model learns to reason, not just memorize
+
+**For Qwen 0.5B**: This could be the key to making it learn reasoning!
+
+---
+
+### Teacher Forcing + RL: Full Mathematical Derivation
+
+**Reference for future implementation**
+
+#### 1. Core Difference: Supervised vs RL Gradient
+
+Fix input x with correct solution y*.
+
+**Supervised gradient:**
+```
+L_sup(θ) = -log π_θ(y*|x)
+∇L_sup = -∇log π_θ(y*|x)
+```
+→ Full-strength gradient, independent of current probability.
+
+**RL gradient (REINFORCE):**
+```
+J_RL(θ) = E_{y~π}[R(y)] = π_θ(y*|x)  (for R(y)=1{y=y*})
+∇J_RL = π_θ(y*|x) · ∇log π_θ(y*|x)
+```
+→ Gradient **scaled by π_θ(y*|x)** → tiny when success is rare!
+
+**Key insight:**
+```
+∇J_RL = -π_θ(y*|x) · ∇L_sup
+```
+RL gradient = supervised gradient × current success probability.
+
+#### 2. Clean Combined Objective
+
+Treat p*(y|x) = δ_{y=y*} as prior. Optimize:
+
+```
+J(θ) = E_{y~π}[R(y)] - β·KL(π_θ || p*)
+```
+
+Expanded gradient:
+```
+∇J = E_{y~π}[(R(y) + β·log p*(y|x) - β·log π_θ(y|x) - b(x)) · ∇log π_θ(y|x)]
+```
+
+Where:
+- R(y): RL reward from verifier
+- +β·log p*(y|x): supervised "pull" toward teacher (huge bonus when y=y*)
+- -β·log π_θ(y|x): entropy regularizer
+
+#### 3. Practical Implementation
+
+```python
+L_total = L_supervised + λ * L_RL
+
+# Supervised: always push toward y*
+L_supervised = -log π_θ(y*|x)
+
+# RL: learn from self-play (with softmax weighting!)
+L_RL = -Σ w_i · log π_θ(y_i|x)  where w_i = softmax(R_i/τ)
+```
+
+#### 4. Why This Fixes Cold Start
+
+- **Pure RL**: If π_θ(y*|x) ≈ 0, gradient ≈ 0. Can't learn!
+- **Pure SL**: Always gets gradient, but no exploration.
+- **Combined**: SL provides base capability, RL explores beyond.
+
+#### 5. Connection to Our Softmax Weighting
+
+With teacher forcing, we could:
+1. Include ground truth y* in each batch with reward = 1.0
+2. Apply softmax weighting across all samples (including GT)
+3. GT always gets high weight → guaranteed learning signal!
+
+```python
+# Pseudo-code
+samples = generate_N_samples(model, x)  # Model rollouts
+samples.append(ground_truth_y_star)     # Inject GT
+rewards = [verify(s) for s in samples]
+rewards[-1] = 1.0  # GT always correct
+
+weights = softmax(rewards / tau)        # Softmax weighting
+# Now GT has high weight, provides strong gradient!
+```
+
+This elegantly combines our softmax hypothesis with teacher forcing.
