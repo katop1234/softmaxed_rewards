@@ -1,0 +1,8 @@
+GRPO-Zero/
+TinyZero/
+simple_GRPO/
+venv/
+__pycache__/
+*.pyc
+logs/
+ckpt/
