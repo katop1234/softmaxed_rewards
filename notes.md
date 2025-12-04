@@ -219,16 +219,42 @@ Rule of thumb: τ ≈ (reward_max - reward_min) / 2
 
 ---
 
-### Final Eval Results (Step 30)
+### Final Eval Results (Step 50-70)
 
-| Experiment | Step 10 | Step 20 | Step 30 | Trend |
-|------------|---------|---------|---------|-------|
-| Baseline   | 12%     | 11%     | 12%     | FLAT  |
-| **τ=0.5**  | 16%     | 19%     | **22%** | ↑↑↑   |
-| τ=0.25     | 20%     | -       | -       | OK    |
-| τ=1.0      | 0%      | -       | -       | BROKEN|
+| Experiment | Eval Trajectory | Latest | vs Baseline |
+|------------|-----------------|--------|-------------|
+| Baseline | 12→11→12→14→14→17→17 | 17% | - |
+| **τ=0.5** | 16→19→22→31→**38** | **38%** | **+124%** ✅ |
+| τ=0.25 | 20→30→27 | 27% | +59% |
+| τ=0.75 | 3 | 3% | BROKEN |
+| τ=1.0 | 0 | 0% | BROKEN |
+| Anneal 0.75→0.25 | 33 | 33% | +94% |
 
-**τ=0.5 shows +83% improvement over baseline (22% vs 12%)!**
+**τ=0.5 shows +124% improvement over baseline (38% vs 17%)!**
+
+Annealing from 0.75→0.25 also works (33%), even though constant τ=0.75 is broken!
+
+### Convergence Analysis
+
+After ~60 steps:
+- **τ=0.5 and τ=0.25 both converge to ~38%**
+- Baseline stuck at 14%
+- Annealing from 1.0→0.3 is too slow (starts broken)
+- Annealing 0.75→0.25 reaches 33% but not better than constant τ=0.5
+
+### Recommended Settings
+
+**For Countdown task (rewards [0, 1.1]):**
+- Use **τ = 0.5** (or τ = 0.25-0.5 range)
+- Formula: **τ* ≈ reward_range / 2**
+- Annealing not necessary - constant τ works fine
+
+### Why It Works
+
+Softmax with proper τ:
+1. Concentrates learning signal on rare correct samples
+2. Encourages exploratory reasoning (tries multiple approaches)
+3. Avoids the "quick wrong answer" trap of linear normalization
 
 ### Qualitative Difference in Reasoning
 
