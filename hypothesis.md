@@ -1,4 +1,14 @@
-Here’s a tight summary of what you wrote.
+## TODO Ideas
+
+- **Gaussian quantile normalization**: Map rewards to Gaussian via quantile transform (matches ALL moments, not just mean/std)
+- **Teacher forcing + RL**: L = L_SL + λ·L_RL, inject ground truth to fix cold start (see notes.md for derivation)
+- **Qwen 0.5B experiment**: Test if softmax helps small models learn reasoning (currently stuck at 0%)
+- **MATH level 4-5**: Competition math (AMC/AIME) experiments
+- **Temperature sweep**: τ = 0.25, 0.5, 0.75, 1.0 with Gaussian quantile
+
+---
+
+Here's a tight summary of what you wrote.
 
 ---
 
